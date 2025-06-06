@@ -467,6 +467,8 @@ class TeamsListView(ExpandableFieldViewMixin, GenericAPIView):
             })
 
         if text_search and CourseTeamIndexer.search_is_enabled():
+            for team in CourseTeam.objects.all():
+                CourseTeamIndexer.index(team)
             try:
                 search_engine = CourseTeamIndexer.engine()
             except ElasticSearchConnectionError:
@@ -474,7 +476,6 @@ class TeamsListView(ExpandableFieldViewMixin, GenericAPIView):
                     build_api_error(gettext_noop('Error connecting to elasticsearch')),
                     status=status.HTTP_503_SERVICE_UNAVAILABLE
                 )
-
             result_filter.update({'course_id': course_id_string})
 
             search_results = search_engine.search(
